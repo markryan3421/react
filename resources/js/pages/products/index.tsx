@@ -7,6 +7,12 @@ import { usePage } from '@inertiajs/react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useEffect, useState } from 'react';
 import { Eye, Pencil, Trash, CirclePlusIcon } from 'lucide-react';
+import { Pagination } from '@/components/ui/pagination';
+import { Input } from '@/components/ui/input';
+import { useForm, router } from '@inertiajs/react';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@radix-ui/react-tooltip';
+
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -23,13 +29,47 @@ interface Product {
     description: string;
     price: number;
     featured_image: string;
+    featured_image_original_name: string;
     created_at: string;
 }
 
-export default function Index({ ...props }: { products: Product[] }) {
+// Define the LinkProps interface for pagination links
+interface LinkProps {
+    // From 'links' array
+    active: boolean;
+    label: string;
+    url: string | null;
+}
+
+// Define the ProductPagination interface for paginated product data
+interface ProductPagination {
+    // This are the list of arrays inside the 'products' object
+    data: Product[]; // Array of Product objects
+    links: LinkProps[]; // Array of pagination link objects
+    from: number;
+    to: number;
+    total: number;
+}
+
+// Define the FilterProps interface for search filters
+interface FilterProps {
+    search: string;
+}
+
+// Define the props for the Index component
+// Get the 'products' and 'filters' in the form of object array - compacted from the controller
+interface IndexProps {
+    products: ProductPagination;
+    filters: FilterProps;
+}
+
+export default function Index({ products, filters }: IndexProps) {
+    // Get the route function from ziggy-js to generate URLs
+    const route = useRoute();
+
     // Destructure 'products' from props, which is an array of Product objects fetched from the controller
-    const { products } = props;
-    console.log('Props:', props);
+    // const { products } = props;
+    console.log('Products: ', products);
 
     // This will display flash message from the backend (success/error)
     const { flash } = usePage<{ flash?: { success?: string; error?: string } }>().props;
@@ -44,8 +84,36 @@ export default function Index({ ...props }: { products: Product[] }) {
         }
     }, [flashMessage]);
 
-    // Get the route function from ziggy-js to generate URLs
-    const route = useRoute();
+    // Search form state management using Inertia's useForm hook
+    const { data, setData } = useForm({
+        search: filters.search || '',
+    });
+
+    // Handle search input change
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setData('search', value);
+
+        // Update the URL with the search query parameter
+        const queryString = value ? { search: value } : {};
+
+        // Pass the search query to the backend to filter products
+        router.get(route('products.index'), queryString, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    };
+
+    // Clears the search bar and resets the product list
+    const handleReset = () => {
+        setData('search', '');
+
+        router.get(route('products.index'), {}, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    }
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Product Management" />
@@ -66,16 +134,33 @@ export default function Index({ ...props }: { products: Product[] }) {
                 )}
 
 
-                {/* Add Product Button */}
-                <div className="ml-auto">
-                    <Link
-                        className="flex items-center cursor-pointer py-3 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-100 text-blue-800 hover:bg-blue-200 focus:outline-hidden focus:bg-blue-200 disabled:opacity-50 disabled:pointer-events-none dark:text-blue-400 dark:bg-blue-800/30 dark:hover:bg-blue-800/20 dark:focus:bg-blue-800/20"
-                        as='button'
-                        href={route('products.create')}>
-                        <CirclePlusIcon />
-                        Add Product
-                    </Link>
+                <div className="flex items-center justify-between gap-4 w-full">
+                    {/* Search Bar */}
+                    <Input
+                        type="text"
+                        value={data.search}
+                        onChange={handleChange}
+                        placeholder='Search product...'
+                        name="search"
+                        className='max-w-sm h-10 w-1/3'
+                    />
+
+                    <Button onClick={handleReset} className="ml-2 h-10 w-10 p-5 cursor-pointer bg-gray-500 hover:bg-gray-400">
+                        clear
+                    </Button>
+
+                    {/* Add Product Button */}
+                    <div className="ml-auto">
+                        <Link
+                            className="flex items-center cursor-pointer py-3 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-100 text-blue-800 hover:bg-blue-200 focus:outline-hidden focus:bg-blue-200 disabled:opacity-50 disabled:pointer-events-none dark:text-blue-400 dark:bg-blue-800/30 dark:hover:bg-blue-800/20 dark:focus:bg-blue-800/20"
+                            as='button'
+                            href={route('products.create')}>
+                            <CirclePlusIcon />
+                            Add Product
+                        </Link>
+                    </div>
                 </div>
+
 
                 <div className="overflow-hidden rounded-lg border shadow-sm">
                     <table className="w-full table-auto border-collapse text-center">
@@ -92,11 +177,11 @@ export default function Index({ ...props }: { products: Product[] }) {
                         </thead>
 
                         <tbody>
-                            {products.length > 0 ? (
+                            {products.data.length > 0 ? (
                                 /* Loop through the products array using ".map" and render a row for each product*/
-                                products.map((product, index) => (
+                                products.data.map((product, index) => (
                                     <tr key={index}>
-                                        <td className="p-4">{index + 1}</td>
+                                        <td className="p-4">{products.from + index}</td>
                                         <td className="p-4">{product.name}</td>
                                         <td className="p-4">{product.description}</td>
                                         <td className="p-4">${product.price}</td>
@@ -109,38 +194,64 @@ export default function Index({ ...props }: { products: Product[] }) {
                                         </td>
                                         <td className="p-4">{product.created_at}</td>
                                         <td className="p-4">
-                                            <Link
-                                                as="button"
-                                                href={route('products.show', product.id)}
-                                                className='cursor-pointer p-2 hover:bg-blue-950 rounded-sm'
-                                            >
-                                                <Eye color="#3c3adf" size={20} />
-                                            </Link>
-                                            <Link
-                                                as="button"
-                                                href={route('products.edit', product.id)}
-                                                className='cursor-pointer p-2 hover:bg-yellow-950 rounded-sm'
-                                            >
-                                                <Pencil color="#ada21f" size={20} />
-                                            </Link>
-                                            <Link
-                                                as="button"
-                                                method="delete"
-                                                href={route('products.destroy', product.id)}
-                                                className='cursor-pointer p-2 hover:bg-red-950 rounded-sm'
-                                                onClick={(e) => {
-                                                    if (!window.confirm('Are you sure you want to delete this product?')) {
-                                                        e.preventDefault();
-                                                    }
-                                                }}
-                                                preserveScroll={true}
-                                                onSuccess={() => {
-                                                    // Show alert on successful deletion
-                                                    setShowAlert(true);
-                                                }}
-                                            >
-                                                <Trash color="#f72222" size={20} />
-                                            </Link>
+                                            {/* View Button */}
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Link
+                                                        as="button"
+                                                        href={route('products.show', product.id)}
+                                                        className='cursor-pointer p-2 hover:bg-blue-950 rounded-sm'
+                                                    >
+                                                        <Eye color="#3c3adf" size={20} />
+                                                    </Link>
+                                                </TooltipTrigger>
+                                                <TooltipContent className='text-blue-300 bg-blue-950 rounded-md px-2 py-1 text-xs mb-1'>
+                                                    View Product
+                                                </TooltipContent>
+                                            </Tooltip>
+
+                                            {/* Edit Button */}
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Link
+                                                        as="button"
+                                                        href={route('products.edit', product.id)}
+                                                        className='cursor-pointer p-2 hover:bg-yellow-950 rounded-sm'
+                                                    >
+                                                        <Pencil color="#ada21f" size={20} />
+                                                    </Link>
+                                                </TooltipTrigger>
+                                                <TooltipContent className='text-yellow-300 bg-yellow-950 rounded-md px-2 py-1 text-xs mb-1'>
+                                                    Edit Product
+                                                </TooltipContent>
+                                            </Tooltip>
+
+                                            {/* Delete Button */}
+                                            <Tooltip>
+                                                <TooltipTrigger>
+                                                    <Link
+                                                        as="button"
+                                                        method="delete"
+                                                        href={route('products.destroy', product.id)}
+                                                        className='cursor-pointer p-2 hover:bg-red-950 rounded-sm'
+                                                        onClick={(e) => {
+                                                            if (!window.confirm('Are you sure you want to delete this product?')) {
+                                                                e.preventDefault();
+                                                            }
+                                                        }}
+                                                        preserveScroll={true}
+                                                        onSuccess={() => {
+                                                            // Show alert on successful deletion
+                                                            setShowAlert(true);
+                                                        }}
+                                                    >
+                                                        <Trash color="#f72222" size={20} />
+                                                    </Link>
+                                                </TooltipTrigger>
+                                                <TooltipContent className='text-red-300 bg-red-950 rounded-md px-2 py-1 text-xs mb-1'>
+                                                    Delete Product
+                                                </TooltipContent>
+                                            </Tooltip>
                                         </td>
                                     </tr>
                                 ))
@@ -155,6 +266,7 @@ export default function Index({ ...props }: { products: Product[] }) {
                         </tbody>
                     </table>
                 </div>
+                <Pagination products={products} />
             </div>
         </AppLayout>
     );
