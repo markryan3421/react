@@ -17,20 +17,25 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         // dump($request->all());
+        $productsQuery = Product::query();
 
-        // Get all the products first
-        $products = Product::query();
+        // Get all the products
+        $totalCount = $productsQuery->count();
 
         // Check if the search query matches any of the data in the database
         if($request->filled('search')) {
             $search = $request->search;
 
-            $products->where(fn($query) =>
+            $productsQuery->where(fn($query) =>
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%")
                     ->orWhere('price', 'like', "%{$search}%")
             );
         }
+
+        // Number of products that matches the search query
+        // Filtered search count
+        $filteredCount = $productsQuery->count();
 
         $perPage = (int) ($request->perPage ?? 5);
 
@@ -48,15 +53,15 @@ class ProductController extends Controller
 
             $products = [
                 'data' => $allProducts,
-                'total' => $allProducts->count(),
+                'total' => $filteredCount,
                 'perPage' => $perPage,
                 'from' => 1,
-                'to' => $allProducts->count(),
+                'to' => $filteredCount,
                 'links' => [],
             ];
         } else {
-            // This will fetch all the filtered products that matches the search query
-            $products = $products->latest()->paginate($perPage)->withQueryString();
+            // This will fetch all the filtered products that matches the (1)search query and (2)per page count
+            $products = $productsQuery->latest()->paginate($perPage)->withQueryString();
 
             $products->getCollection()->transform(fn($product) => [
             // $products = Product::latest()->get()->map(fn($product) => [
@@ -73,7 +78,7 @@ class ProductController extends Controller
 
         // Fetch all the products that matches the search query
         $filters = $request->only(['search', 'perPage']);
-        return Inertia::render('products/index', compact('products', 'filters'));
+        return Inertia::render('products/index', compact('products', 'filters', 'totalCount', 'filteredCount'));
     }
 
     /**

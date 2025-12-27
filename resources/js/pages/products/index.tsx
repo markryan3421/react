@@ -62,9 +62,11 @@ interface FilterProps {
 interface IndexProps {
     products: ProductPagination;
     filters: FilterProps;
+    totalCount: number;
+    filteredCount: number;
 }
 
-export default function Index({ products, filters }: IndexProps) {
+export default function Index({ products, filters, totalCount, filteredCount }: IndexProps) {
     // Get the route function from ziggy-js to generate URLs
     const route = useRoute();
 
@@ -288,7 +290,7 @@ export default function Index({ products, filters }: IndexProps) {
                         </tbody>
                     </table>
                 </div>
-                <Pagination products={products} perPage={data.perPage} onPerPageChange={handlePerPageChange} />
+                <Pagination products={products} perPage={data.perPage} onPerPageChange={handlePerPageChange} totalCount={totalCount} filteredCount={filteredCount} search={data.search} />
             </div>
         </AppLayout>
     );

@@ -19,14 +19,23 @@ interface PaginationProps {
     products: PaginationData;
     perPage: string;
     onPerPageChange: (value: string) => void;
+    totalCount: number;
+    filteredCount: number;
+    search: string;
 }
 
-export const Pagination = ({ products, perPage, onPerPageChange }: PaginationProps) => {
-    console.log('Per page:', perPage);
-
+export const Pagination = ({ products, perPage, onPerPageChange, totalCount, filteredCount, search }: PaginationProps) => {
+    // console.log('Per page:', perPage);
+    // console.log(totalCount, filteredCount, search);
     return (
         <div className='flex items-center justify-between mt-4'>
-            <p>Showing <strong>{products.from}</strong> to <strong>{products.to}</strong> of <strong>{products.total}</strong> products</p>
+
+            {/* Pagination Information */}
+            {search ? (
+                <p>Showing <strong>{filteredCount}</strong> item{filteredCount !== 1 && 's'} out of <strong>{totalCount}</strong> product{totalCount !== 1 && 's'}</p>
+            ) : (
+                <p>Showing <strong>{products.from}</strong> to <strong>{products.to}</strong> of <strong>{products.total}</strong> product{totalCount !== 1 && 's'}</p>
+            )}
 
             <div className='flex items-center gap-2'>
                 <span className='text-sm'>Rows per page:</span>
