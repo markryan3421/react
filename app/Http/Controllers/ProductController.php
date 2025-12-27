@@ -16,7 +16,8 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        
+        // dump($request->all());
+
         // Get all the products first
         $products = Product::query();
 
@@ -31,23 +32,47 @@ class ProductController extends Controller
             );
         }
 
-        // This will fetch all the filtered products that matches the search query
-        $products = $products->latest()->paginate(3)->withQueryString();
+        $perPage = (int) ($request->perPage ?? 5);
 
-        $products->getCollection()->transform(fn($product) => [
-        // $products = Product::latest()->get()->map(fn($product) => [
-            "id" => $product->id,
-            "name"=> $product->name,
-            "description" => $product->description,
-            "price" => $product->price,
-            "featured_image" => $product->featured_image,
-            "featured_image_original_name" => $product->featured_image_original_name,
-            "created_at" => $product->created_at->format('d M Y'),
-        ]);
+        // Fetch all product
+        if($perPage === -1) {
+            $allProducts = Product::latest()->get()->map(fn($product) => [
+                "id" => $product->id,
+                "name"=> $product->name,
+                "description" => $product->description,
+                "price" => $product->price,
+                "featured_image" => $product->featured_image,
+                "featured_image_original_name" => $product->featured_image_original_name,
+                "created_at" => $product->created_at->format('d M Y'),
+            ]);
+
+            $products = [
+                'data' => $allProducts,
+                'total' => $allProducts->count(),
+                'perPage' => $perPage,
+                'from' => 1,
+                'to' => $allProducts->count(),
+                'links' => [],
+            ];
+        } else {
+            // This will fetch all the filtered products that matches the search query
+            $products = $products->latest()->paginate($perPage)->withQueryString();
+
+            $products->getCollection()->transform(fn($product) => [
+            // $products = Product::latest()->get()->map(fn($product) => [
+                "id" => $product->id,
+                "name"=> $product->name,
+                "description" => $product->description,
+                "price" => $product->price,
+                "featured_image" => $product->featured_image,
+                "featured_image_original_name" => $product->featured_image_original_name,
+                "created_at" => $product->created_at->format('d M Y'),
+            ]);
+        }
         // dd($products);
-        
+
         // Fetch all the products that matches the search query
-        $filters = $request->only(['search']);
+        $filters = $request->only(['search', 'perPage']);
         return Inertia::render('products/index', compact('products', 'filters'));
     }
 
@@ -108,6 +133,8 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         $editMode = true;
+        $product = Product::findOrFail($product->id);
+        // dd($product);
         return Inertia::render('products/product-form', compact('product', 'editMode'));
     }
 

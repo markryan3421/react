@@ -54,6 +54,7 @@ interface ProductPagination {
 // Define the FilterProps interface for search filters
 interface FilterProps {
     search: string;
+    perPage: string;
 }
 
 // Define the props for the Index component
@@ -87,6 +88,7 @@ export default function Index({ products, filters }: IndexProps) {
     // Search form state management using Inertia's useForm hook
     const { data, setData } = useForm({
         search: filters.search || '',
+        perPage: filters.perPage || '5',
     });
 
     // Handle search input change
@@ -94,8 +96,11 @@ export default function Index({ products, filters }: IndexProps) {
         const value = e.target.value;
         setData('search', value);
 
-        // Update the URL with the search query parameter
-        const queryString = value ? { search: value } : {};
+        // Update the URL with the search query value
+        const queryString = {
+            ...(value && { search: value }),
+            ...(data.perPage && { perPage: data.perPage }),
+        };
 
         // Pass the search query to the backend to filter products
         router.get(route('products.index'), queryString, {
@@ -107,8 +112,25 @@ export default function Index({ products, filters }: IndexProps) {
     // Clears the search bar and resets the product list
     const handleReset = () => {
         setData('search', '');
+        setData('perPage', '5');
 
         router.get(route('products.index'), {}, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    }
+
+    // Handle number of products to display per page
+    const handlePerPageChange = (value: string) => {
+        setData('perPage', value);
+
+        // Update the URL with the per page value
+        const queryString = {
+            ...(data.search && { search: data.search }),
+            ...(value && { perPage: value }),
+        };
+
+        router.get(route('products.index'), queryString, {
             preserveState: true,
             preserveScroll: true,
         });
@@ -196,7 +218,7 @@ export default function Index({ products, filters }: IndexProps) {
                                         <td className="p-4">
                                             {/* View Button */}
                                             <Tooltip>
-                                                <TooltipTrigger asChild>
+                                                <TooltipTrigger>
                                                     <Link
                                                         as="button"
                                                         href={route('products.show', product.id)}
@@ -212,7 +234,7 @@ export default function Index({ products, filters }: IndexProps) {
 
                                             {/* Edit Button */}
                                             <Tooltip>
-                                                <TooltipTrigger asChild>
+                                                <TooltipTrigger>
                                                     <Link
                                                         as="button"
                                                         href={route('products.edit', product.id)}
@@ -266,7 +288,7 @@ export default function Index({ products, filters }: IndexProps) {
                         </tbody>
                     </table>
                 </div>
-                <Pagination products={products} />
+                <Pagination products={products} perPage={data.perPage} onPerPageChange={handlePerPageChange} />
             </div>
         </AppLayout>
     );
