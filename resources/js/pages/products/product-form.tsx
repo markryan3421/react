@@ -36,7 +36,7 @@ export default function ProductForm({ ...props }) {
 
     // 2.  Initialize the form with useForm hook (node_modules\@inertiajs\react\types\useForm.d.ts)
     const { data, setData, post, errors, processing, put, reset } = useForm<FormData>({
-        name: product?.name || '', // 'product?.name' if EDITING and '' if CREATING 
+        name: product?.name || '', // 'product?.name' if EDITING and '' if CREATING
         description: product?.description || '',
         price: product?.price || '',
         featured_image: null as File | null,
@@ -58,7 +58,7 @@ export default function ProductForm({ ...props }) {
 
         // Send to backend, the 'store()' / 'update()' method in ProductController will do the validation
         if (editMode) {
-            put(route('product.update', product.id), {
+            put(route('products.update', product.id), {
                 forceFormData: true, // To handle file uploads
                 onSuccess: () => reset(), // Reset the form
             })
@@ -79,7 +79,7 @@ export default function ProductForm({ ...props }) {
                 <div className="ml-auto">
                     <Link
                         as='button'
-                        className="flex items-center w-fit cursor-pointer py-3 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-100 text-blue-800 hover:bg-blue-200 focus:outline-hidden focus:bg-blue-200 disabled:opacity-50 disabled:pointer-events-none dark:text-blue-400 dark:bg-blue-800/30 dark:hover:bg-blue-800/20 dark:focus:bg-blue-800/20"
+                        className="flex items-center w-fit cursor-pointer py-3 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-primary text-white hover:bg-ring focus:outline-hidden focus:bg-ring disabled:opacity-50 disabled:pointer-events-none"
                         href={route('products.index')}>
                         <ArrowLeft />
                         Back to Products
@@ -93,25 +93,25 @@ export default function ProductForm({ ...props }) {
 
                     <CardContent className="space-y-6">
                         <form onSubmit={submit}>
-                            {/* Product Name */}
-                            <div className='grid gap-2 mt-4'>
-                                <Label className="block mb-2 font-medium text-sm text-gray-700 dark:text-gray-300">
-                                    <span className='text-red-500 font-bold me-1'>*</span>
-                                    Product Name
-                                </Label>
-                                <Input
-                                    value={data.name}
-                                    onChange={e => setData('name', e.target.value)}
-                                    type="text"
-                                    name="name"
-                                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="Enter product name"
-                                    autoFocus
-                                    tabIndex={1}
-                                    disabled={viewMode || processing}
-                                />
-                                <InputError message={errors.name} />
-                            </div>
+                                {/* Product Name */}
+                                <div className='grid gap-2 mt-4'>
+                                    <Label className="block mb-2 font-medium text-sm text-gray-700 dark:text-gray-300">
+                                        <span className='text-red-500 font-bold me-1'>*</span>
+                                        Product Name
+                                    </Label>
+                                    <Input
+                                        value={data.name}
+                                        onChange={e => setData('name', e.target.value)}
+                                        type="text"
+                                        name="name"
+                                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Enter product name"
+                                        autoFocus
+                                        tabIndex={1}
+                                        disabled={viewMode || processing}
+                                    />
+                                    <InputError message={errors.name} />
+                                </div>
 
                             {/* Product Description */}
                             <div className='grid gap-2 mt-4'>
@@ -190,7 +190,6 @@ export default function ProductForm({ ...props }) {
                                 <Button
                                     type="submit"
                                     className="mt-4 w-fit cursor-pointer"
-                                    tabIndex={4}
                                     data-test="login-button"
                                 >
                                     {processing && <LoaderCircle className='h-4 w-4 animate-spin' />}
