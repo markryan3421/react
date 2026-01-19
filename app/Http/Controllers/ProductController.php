@@ -17,11 +17,9 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         // dump($request->all());
-
-        // Get all the products
         $productsQuery = Product::query();
 
-        // Get the number of products
+        // Get all the products
         $totalCount = $productsQuery->count();
 
         // Check if the search query matches any of the data in the database
