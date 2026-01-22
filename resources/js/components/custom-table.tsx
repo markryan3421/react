@@ -71,7 +71,7 @@ export const CustomTable = ({ columns, actions, data, from, onDelete }: CustomTa
                     <tr className="border-b">
                         <th className="p-4">#</th>
 
-                        {columns.map((column, index) => (
+                        {columns.map((column) => (
                             <th key={column.key} className={column.className}>{column.label}</th>
                         ))}
                     </tr>
