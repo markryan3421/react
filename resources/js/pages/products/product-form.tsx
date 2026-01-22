@@ -58,7 +58,7 @@ export default function ProductForm({ ...props }) {
 
         // Send to backend, the 'store()' / 'update()' method in ProductController will do the validation
         if (editMode) {
-            put(route('product.update', product.id), {
+            put(route('products.update', product.id), {
                 forceFormData: true, // To handle file uploads
                 onSuccess: () => reset(), // Reset the form
             })
@@ -79,7 +79,7 @@ export default function ProductForm({ ...props }) {
                 <div className="ml-auto">
                     <Link
                         as='button'
-                        className="flex items-center w-fit cursor-pointer py-3 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-100 text-blue-800 hover:bg-blue-200 focus:outline-hidden focus:bg-blue-200 disabled:opacity-50 disabled:pointer-events-none dark:text-blue-400 dark:bg-blue-800/30 dark:hover:bg-blue-800/20 dark:focus:bg-blue-800/20"
+                        className="bg-primary hover:bg-chart-4 flex items-center w-fit cursor-pointer py-3 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent"
                         href={route('products.index')}>
                         <ArrowLeft />
                         Back to Products

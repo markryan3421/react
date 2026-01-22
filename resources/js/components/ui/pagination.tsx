@@ -59,7 +59,7 @@ export const Pagination = ({ products, perPage, onPerPageChange, totalCount, fil
             <div className='flex gap-2'>
                 {products.links.map((link, index) => (
                     <Link
-                        className={`px-2 py-1 border rounded ${link.active ? 'bg-blue-500 text-white' : ''}`}
+                        className={`px-2 py-1 border rounded ${link.active ? 'bg-primary text-white' : ''}`}
                         href={link.url || '#'}
                         key={index}
                         dangerouslySetInnerHTML={{ __html: link.label }}

@@ -1,18 +1,17 @@
 import AppLayout from '@/layouts/app-layout';
-// import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import { useRoute } from 'ziggy-js';
 import { usePage } from '@inertiajs/react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useEffect, useState } from 'react';
-import { Eye, Pencil, Trash, CirclePlusIcon } from 'lucide-react';
+import { CirclePlusIcon } from 'lucide-react';
 import { Pagination } from '@/components/ui/pagination';
 import { Input } from '@/components/ui/input';
 import { useForm, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@radix-ui/react-tooltip';
-
+import { CustomTable } from '@/components/custom-table';
+import { ProductTableConfig } from '@/config/tables/product-table';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -138,6 +137,14 @@ export default function Index({ products, filters, totalCount, filteredCount }: 
         });
     }
 
+    const handleDelete = (id: number, route: string) => {
+        if (confirm('Are you sure you want to delete this product?')) {
+            router.delete(route, {
+                preserveScroll: true,
+            });
+        }
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Product Management" />
@@ -169,14 +176,14 @@ export default function Index({ products, filters, totalCount, filteredCount }: 
                         className='max-w-sm h-10 w-1/3'
                     />
 
-                    <Button onClick={handleReset} className="ml-2 h-10 w-10 p-5 cursor-pointer bg-gray-500 hover:bg-gray-400">
+                    <Button onClick={handleReset} className="bg-primary ml-2 h-10 px-5 cursor-pointer">
                         clear
                     </Button>
 
                     {/* Add Product Button */}
                     <div className="ml-auto">
                         <Link
-                            className="flex items-center cursor-pointer py-3 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-100 text-blue-800 hover:bg-blue-200 focus:outline-hidden focus:bg-blue-200 disabled:opacity-50 disabled:pointer-events-none dark:text-blue-400 dark:bg-blue-800/30 dark:hover:bg-blue-800/20 dark:focus:bg-blue-800/20"
+                            className="bg-primary hover:bg-chart-4 text-white flex items-center cursor-pointer py-3 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent focus:outline-hidden focus:bg-blue-200 disabled:opacity-50 disabled:pointer-events-none"
                             as='button'
                             href={route('products.create')}>
                             <CirclePlusIcon />
@@ -185,111 +192,14 @@ export default function Index({ products, filters, totalCount, filteredCount }: 
                     </div>
                 </div>
 
+                <CustomTable
+                    columns={ProductTableConfig.columns}
+                    actions={ProductTableConfig.actions}
+                    data={products.data}
+                    from={products.from}
+                    onDelete={handleDelete}
+                />
 
-                <div className="overflow-hidden rounded-lg border shadow-sm">
-                    <table className="w-full table-auto border-collapse text-center">
-                        <thead>
-                            <tr className="border-b">
-                                <th className="p-4">#</th>
-                                <th className="p-4">Product Name</th>
-                                <th className="p-4">Description</th>
-                                <th className="p-4">Price</th>
-                                <th className="p-4">Featured Image</th>
-                                <th className="p-4">Created Date</th>
-                                <th className="p-4">Action</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            {products.data.length > 0 ? (
-                                /* Loop through the products array using ".map" and render a row for each product*/
-                                products.data.map((product, index) => (
-                                    <tr key={index}>
-                                        <td className="p-4">{products.from + index}</td>
-                                        <td className="p-4">{product.name}</td>
-                                        <td className="p-4">{product.description}</td>
-                                        <td className="p-4">${product.price}</td>
-                                        <td className="p-4">
-                                            {product.featured_image ? (
-                                                <img src={product.featured_image} alt={product.name} className="ms-4 h-16 w-16 object-cover" />
-                                            ) : (
-                                                <span className='text-gray-500 text-sm'>No image uploaded.</span>
-                                            )}
-                                        </td>
-                                        <td className="p-4">{product.created_at}</td>
-                                        <td className="p-4">
-                                            {/* View Button */}
-                                            <Tooltip>
-                                                <TooltipTrigger>
-                                                    <Link
-                                                        as="button"
-                                                        href={route('products.show', product.id)}
-                                                        className='cursor-pointer p-2 hover:bg-blue-950 rounded-sm'
-                                                    >
-                                                        <Eye color="#3c3adf" size={20} />
-                                                    </Link>
-                                                </TooltipTrigger>
-                                                <TooltipContent className='text-blue-300 bg-blue-950 rounded-md px-2 py-1 text-xs mb-1'>
-                                                    View Product
-                                                </TooltipContent>
-                                            </Tooltip>
-
-                                            {/* Edit Button */}
-                                            <Tooltip>
-                                                <TooltipTrigger>
-                                                    <Link
-                                                        as="button"
-                                                        href={route('products.edit', product.id)}
-                                                        className='cursor-pointer p-2 hover:bg-yellow-950 rounded-sm'
-                                                    >
-                                                        <Pencil color="#ada21f" size={20} />
-                                                    </Link>
-                                                </TooltipTrigger>
-                                                <TooltipContent className='text-yellow-300 bg-yellow-950 rounded-md px-2 py-1 text-xs mb-1'>
-                                                    Edit Product
-                                                </TooltipContent>
-                                            </Tooltip>
-
-                                            {/* Delete Button */}
-                                            <Tooltip>
-                                                <TooltipTrigger>
-                                                    <Link
-                                                        as="button"
-                                                        method="delete"
-                                                        href={route('products.destroy', product.id)}
-                                                        className='cursor-pointer p-2 hover:bg-red-950 rounded-sm'
-                                                        onClick={(e) => {
-                                                            if (!window.confirm('Are you sure you want to delete this product?')) {
-                                                                e.preventDefault();
-                                                            }
-                                                        }}
-                                                        preserveScroll={true}
-                                                        onSuccess={() => {
-                                                            // Show alert on successful deletion
-                                                            setShowAlert(true);
-                                                        }}
-                                                    >
-                                                        <Trash color="#f72222" size={20} />
-                                                    </Link>
-                                                </TooltipTrigger>
-                                                <TooltipContent className='text-red-300 bg-red-950 rounded-md px-2 py-1 text-xs mb-1'>
-                                                    Delete Product
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr className='text-center py-4 text-md font-bold'>
-                                    <td colSpan={7} className="p-4 text-center">
-                                        No products found.
-                                    </td>
-                                </tr>
-                            )}
-
-                        </tbody>
-                    </table>
-                </div>
                 <Pagination products={products} perPage={data.perPage} onPerPageChange={handlePerPageChange} totalCount={totalCount} filteredCount={filteredCount} search={data.search} />
             </div>
         </AppLayout>
