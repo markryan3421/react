@@ -3,6 +3,7 @@ import { Eye, Pencil, Trash } from "lucide-react";
 import { useRoute } from "ziggy-js";
 import * as LucidIcons from "lucide-react";
 import { Button } from "./ui/button";
+import { format } from "path/win32";
 
 interface TableColumn {
     label: string;
@@ -30,10 +31,13 @@ interface CustomTableProps {
     actions: ActionConfig[];
     data: TableRow[];
     from: number;
-    onDelete: (id: number, route: string) => void;
+    onDelete: (route: string) => void;
+    onView: (row: TableRow) => void;
+    onEdit: (row: TableRow) => void;
+    isModal?: boolean;
 }
 
-export const CustomTable = ({ columns, actions, data, from, onDelete }: CustomTableProps) => {
+export const CustomTable = ({ columns, actions, data, from, onDelete, onView, onEdit, isModal }: CustomTableProps) => {
     const route = useRoute();
     console.log(columns);
     console.log('Data:', data);
@@ -44,10 +48,30 @@ export const CustomTable = ({ columns, actions, data, from, onDelete }: CustomTa
                 {actions.map((action, index) => {
                     const IconComponent = LucidIcons[action.icon] as React.ElementType;
 
-                    // Delete Function
+                    if (isModal) {
+                        // View Button
+                        if (action.label === 'View') {
+                            return (
+                                <Button key={index} className={action.className} onClick={() => onView?.(row)}>
+                                    <IconComponent size={20} />
+                                </Button>
+                            );
+                        }
+
+                        // Edit Button
+                        if (action.label === 'Edit') {
+                            return (
+                                <Button key={index} className={action.className} onClick={() => onEdit?.(row)}>
+                                    <IconComponent size={20} />
+                                </Button>
+                            );
+                        }
+                    }
+
+                    // Delete Button
                     if (action.label === 'Delete') {
                         return (
-                            <Button key={index} className={action.className} onClick={() => onDelete(row.id, route(action.route, row.id))}>
+                            <Button key={index} className={action.className} onClick={() => onDelete(route(action.route, row.id))}>
                                 <IconComponent size={20} />
                             </Button>
                         );
@@ -90,6 +114,8 @@ export const CustomTable = ({ columns, actions, data, from, onDelete }: CustomTa
                                             <div> <img src={row[col.key]} alt="Product Image" className="h-20 w-20 rounded-lg object-cover justify-self-center" /></div>
                                         ) : col.isAction ? (
                                             renderActionButtons(row)
+                                        ) : col.key === 'created_at' ? (
+                                            <span>{new Date(row[col.key]).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
                                         ) : (
                                             row[col.key]
                                         )}
