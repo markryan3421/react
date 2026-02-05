@@ -1,9 +1,8 @@
 import { Link } from "@inertiajs/react";
-import { Eye, Pencil, Trash } from "lucide-react";
+// import { Eye, Pencil, Trash } from "lucide-react";
 import { useRoute } from "ziggy-js";
 import * as LucidIcons from "lucide-react";
 import { Button } from "./ui/button";
-import { format } from "path/win32";
 
 interface TableColumn {
     label: string;
@@ -111,7 +110,7 @@ export const CustomTable = ({ columns, actions, data, from, onDelete, onView, on
                                 {columns.map((col) => (
                                     <td key={col.key} className="border p-4 text-center">
                                         {col.isImage ? (
-                                            <div> <img src={row[col.key]} alt="Product Image" className="h-20 w-20 rounded-lg object-cover justify-self-center" /></div>
+                                            <div> <img src={row[col.key]} alt="Product Image" className="h-32 w-32 rounded-lg object-cover justify-self-center" /></div>
                                         ) : col.isAction ? (
                                             renderActionButtons(row)
                                         ) : col.key === 'created_at' ? (

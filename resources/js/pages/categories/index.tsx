@@ -77,8 +77,8 @@ export default function Index({ categories }: IndexProps) {
     const route = useRoute();
 
     // This will display flash message from the backend (success/error)
-    const { flash } = usePage<{ flash?: { success?: string; error?: string } }>().props;
-    const flashMessage = flash?.success || flash?.error;
+    // const { flash } = usePage<{ flash?: { success?: string; error?: string } }>().props;
+    // const flashMessage = flash?.success || flash?.error;
     const [modalOpen, setModalOpen] = React.useState(false);
     const [mode, setMode] = React.useState<'create' | 'view' | 'edit'>('create');
     const [selectedCategory, setSelectedCategory] = React.useState<any>(null);
@@ -217,7 +217,6 @@ export default function Index({ categories }: IndexProps) {
                     onEdit={(category) => openModal('edit', category)}
                     isModal={true}
                 />
-
             </div>
         </AppLayout>
     );
