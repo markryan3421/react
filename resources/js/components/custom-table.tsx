@@ -43,7 +43,7 @@ export const CustomTable = ({ columns, actions, data, from, onDelete, onView, on
 
     const renderActionButtons = (row: TableRow) => {
         return (
-            <div className="flex">
+            <div className="flex justify-center">
                 {actions.map((action, index) => {
                     const IconComponent = LucidIcons[action.icon] as React.ElementType;
 
@@ -108,7 +108,7 @@ export const CustomTable = ({ columns, actions, data, from, onDelete, onView, on
 
                                 {/* Loop to 'columns' JSON to match its "key" value to database column's value. Then display the data */}
                                 {columns.map((col) => (
-                                    <td key={col.key} className="border p-4 text-center">
+                                    <td key={col.key} className={`border p-4 text-center ${col.className}`}>
                                         {col.isImage ? (
                                             <div> <img src={row[col.key]} alt="Product Image" className="h-32 w-32 rounded-lg object-cover justify-self-center" /></div>
                                         ) : col.isAction ? (
@@ -124,8 +124,8 @@ export const CustomTable = ({ columns, actions, data, from, onDelete, onView, on
                         ))
                     ) : (
                         <tr className='text-center py-4 text-md font-bold'>
-                            <td colSpan={7} className="p-4 text-center">
-                                No products found.
+                            <td colSpan={7} className="p-4 text-center text-red-700">
+                                No data found.
                             </td>
                         </tr>
                     )}

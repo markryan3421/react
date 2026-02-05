@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label"
 import { CustomTextarea } from "./ui/custom-textarea"
 // import { ButtonProps } from "@headlessui/react"
 import InputError from './input-error';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 
 interface AddButtonProps {
     id: string,
@@ -26,17 +27,18 @@ interface AddButtonProps {
 }
 
 interface FieldProps {
-    id: string,
-    key: string,
-    name: string,
-    label: string,
-    placeholder?: string,
-    type: string,
-    autocomplete?: string,
-    tabIndex: number,
-    autoFocus?: boolean,
-    rows?: number,
-    accept?: string,
+    id: string;
+    key: string;
+    name: string;
+    label: string;
+    placeholder?: string;
+    type: string;
+    autocomplete?: string;
+    tabIndex: number;
+    autoFocus?: boolean;
+    rows?: number;
+    accept?: string;
+    options?: { label: string, value: string, key: string }[];
 }
 
 interface ButtonProps {
@@ -51,15 +53,15 @@ interface CustomModalFormProps {
     addButton: AddButtonProps;
     title: string;
     description: string;
-    fields: FieldProps;
-    buttons: ButtonProps;
+    fields: FieldProps[];
+    buttons: ButtonProps[];
     data: Record<string, any>;
     setData: (name: string, value: any) => void;
     processing: boolean;
     errors: Record<string, string>;
     handleSubmit: (data: any) => void;
     open: boolean;
-    opOpenChange: (open: boolean) => void;
+    onOpenChange: (open: boolean) => void;
     mode: 'create' | 'view' | 'edit';
     previewImage?: string | null;
 }
@@ -115,6 +117,24 @@ export const CustomModalForm = ({ addButton, title, description, fields, buttons
                                                 />
                                             )}
                                         </div>
+                                    ) : field.type === 'single-select' ? (
+                                        <Select disabled={processing || mode === 'view'} value={data[field.name] || ''} onValueChange={(value) => setData(field.name, value)}>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder={`Select ${field.label}`}></SelectValue>
+                                            </SelectTrigger>
+
+                                            <SelectContent>
+                                                {field.options &&
+                                                    field.options.map((option) => (
+                                                        <SelectItem key={option.key} value={option.value}>
+                                                            {option.label}
+                                                        </SelectItem>
+                                                    ))}
+                                            </SelectContent>
+
+
+
+                                        </Select>
                                     ) : (
                                         <Input
                                             id={field.id}
