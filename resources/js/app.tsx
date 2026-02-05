@@ -5,6 +5,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { initializeTheme } from './hooks/use-appearance';
+import { LayoutProvider } from './contexts/LayoutContext';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -19,9 +20,12 @@ createInertiaApp({
         const root = createRoot(el);
 
         root.render(
-            <StrictMode>
-                <App {...props} />
-            </StrictMode>,
+            <LayoutProvider>
+                <StrictMode>
+                    <App {...props} />
+                </StrictMode>,
+            </LayoutProvider>,
+
         );
     },
     progress: {
