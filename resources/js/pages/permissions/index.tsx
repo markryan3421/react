@@ -81,7 +81,7 @@ export default function Index({ permissions }: IndexProps) {
     const [mode, setMode] = React.useState<'create' | 'view' | 'edit'>('create');
     const [selectedCategory, setSelectedCategory] = React.useState<any>(null);
 
-    const { data, setData, errors, processing, reset, post } = useForm({
+    const { data, setData, errors, processing, reset, post, put } = useForm({
         module: '',
         label: '',
         description: '',
@@ -112,7 +112,7 @@ export default function Index({ permissions }: IndexProps) {
         if (mode === 'edit' && selectedCategory) {
             setData('_method', 'PUT');
 
-            post(route('permissions.update', selectedCategory.id), {
+            put(route('permissions.update', selectedCategory.id), {
                 forceFormData: true,
                 onSuccess: (response: { props: FlashProps }) => {
                     const successMessage = response.props.flash?.success

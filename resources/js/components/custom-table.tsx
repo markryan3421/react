@@ -3,6 +3,7 @@ import { Link } from "@inertiajs/react";
 import { useRoute } from "ziggy-js";
 import * as LucidIcons from "lucide-react";
 import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
 
 interface TableColumn {
     label: string;
@@ -10,6 +11,7 @@ interface TableColumn {
     isImage?: boolean;
     isAction?: boolean;
     className?: string;
+    type?: string;
 }
 
 interface ActionConfig {
@@ -38,8 +40,8 @@ interface CustomTableProps {
 
 export const CustomTable = ({ columns, actions, data, from, onDelete, onView, onEdit, isModal }: CustomTableProps) => {
     const route = useRoute();
-    console.log(columns);
-    console.log('Data:', data);
+    // console.log(columns);
+    // console.log('Data:', data);
 
     const renderActionButtons = (row: TableRow) => {
         return (
@@ -115,6 +117,14 @@ export const CustomTable = ({ columns, actions, data, from, onDelete, onView, on
                                             renderActionButtons(row)
                                         ) : col.key === 'created_at' ? (
                                             <span>{new Date(row[col.key]).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                                        ) : col.type === 'multi-values' && Array.isArray(row[col.key]) ? (
+                                            <div className="flex flex-wrap justify-center items-center gap-1">
+                                                {row[col.key].map((permission: any) => (
+                                                    <Badge key={permission.id} variant='outline' className="bg-primary text-white p-2">
+                                                        {permission.label || permission.name}
+                                                    </Badge>
+                                                ))}
+                                            </div>
                                         ) : (
                                             row[col.key]
                                         )}
