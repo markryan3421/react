@@ -58,6 +58,12 @@ interface Permissions {
     description: string;
 }
 
+interface FieldOptions {
+    key: string;
+    label: string;
+    value: string;
+}
+
 interface ExtraData {
     [module: string]: Permissions[];
 }
@@ -81,7 +87,7 @@ interface CustomModalFormProps {
 }
 
 export const CustomModalForm = ({ addButton, title, description, fields, buttons, data, setData, errors, processing, handleSubmit, open, onOpenChange, mode = 'create', previewImage, extraData }: CustomModalFormProps) => {
-    // console.log("Extradata:", extraData);
+    console.log("Extradata:", extraData);
     // console.log("Data permissions:", data.permissions);
     return (
         <Dialog open={open} onOpenChange={onOpenChange} modal>
@@ -99,111 +105,126 @@ export const CustomModalForm = ({ addButton, title, description, fields, buttons
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid gap-6">
-                        {fields.map((field) => (
-                            <div key={field.key} className="grid gap-2">
-                                <Label htmlFor={field.id}>{field.label}</Label>
-                                {field.type === 'textarea' ? (
-                                    <CustomTextarea
-                                        id={field.id}
-                                        name={field.name}
-                                        placeholder={field.placeholder}
-                                        rows={field.rows}
-                                        autoComplete={field.autocomplete}
-                                        tabIndex={field.tabIndex}
-                                        onChange={(e) => setData(field.name, e.target.value)}
-                                        value={data[field.name] || ''}
-                                        disabled={processing || mode === 'view'}
-                                    />
-                                ) : field.type === 'file' ? (
-                                    <div className="space-y-2">
-                                        {/* Display the image in View mode */}
-                                        {mode !== 'create' && previewImage && <img src={previewImage} alt={data?.[field.key]} className="h-32 w-32 object-cover rounded" />}
+                        {fields.map((field) => {
 
-                                        {/* Input field for image */}
-                                        {mode !== 'view' && (
-                                            <Input
-                                                id={field.id}
-                                                name={field.name}
-                                                type='file'
-                                                accept={field.accept}
-                                                tabIndex={field.tabIndex}
-                                                onChange={(e) => setData(field.name, e.target.files ? e.target.files[0] : null)}
-                                                disabled={processing}
-                                            />
-                                        )}
-                                    </div>
-                                ) : field.type === 'single-select' ? (
-                                    <Select disabled={processing || mode === 'view'} value={data[field.name] || ''} onValueChange={(value) => setData(field.name, value)}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder={`Select ${field.label}`}></SelectValue>
-                                        </SelectTrigger>
+                            const isHiddenPassword = field.type === 'password' && mode !== 'create';
 
-                                        <SelectContent>
-                                            {field.options &&
-                                                field.options.map((option) => (
+                            if (isHiddenPassword) {
+                                return null;
+                            }
+
+                            return (
+                                <div key={field.key} className="grid gap-2">
+                                    <Label htmlFor={field.id}>{field.label}</Label>
+                                    {field.type === 'textarea' ? (
+                                        <CustomTextarea
+                                            id={field.id}
+                                            name={field.name}
+                                            placeholder={field.placeholder}
+                                            rows={field.rows}
+                                            autoComplete={field.autocomplete}
+                                            tabIndex={field.tabIndex}
+                                            onChange={(e) => setData(field.name, e.target.value)}
+                                            value={data[field.name] || ''}
+                                            disabled={processing || mode === 'view'}
+                                        />
+                                    ) : field.type === 'file' ? (
+                                        <div className="space-y-2">
+                                            {/* Display the image in View mode */}
+                                            {mode !== 'create' && previewImage && <img src={previewImage} alt={data?.[field.key]} className="h-32 w-32 object-cover rounded" />}
+
+                                            {/* Input field for image */}
+                                            {mode !== 'view' && (
+                                                <Input
+                                                    id={field.id}
+                                                    name={field.name}
+                                                    type='file'
+                                                    accept={field.accept}
+                                                    tabIndex={field.tabIndex}
+                                                    onChange={(e) => setData(field.name, e.target.files ? e.target.files[0] : null)}
+                                                    disabled={processing}
+                                                />
+                                            )}
+                                        </div>
+                                    ) : field.type === 'single-select' ? (
+                                        <Select disabled={processing || mode === 'view'} value={data[field.name] || ''} onValueChange={(value) => setData(field.name, value)}>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder={`Select ${field.label}`}></SelectValue>
+                                            </SelectTrigger>
+
+                                            <SelectContent>
+                                                {(field.options?.length
+                                                    ? field.options
+                                                    : (extraData?.[field.key] || []).map((item: any) => ({
+                                                        key: item.id,
+                                                        value: item.name,
+                                                        label: item.label,
+                                                    }))
+                                                )?.map((option: FieldOptions) => (
                                                     <SelectItem key={option.key} value={option.value}>
                                                         {option.label}
                                                     </SelectItem>
                                                 ))}
-                                        </SelectContent>
-                                    </Select>
-                                ) : field.type === 'grouped-checkboxes' ? (
-                                    console.log('permissions in form:', data.permissions),
-                                    <div className="space-y-2">
-                                        {extraData &&
-                                            Object.entries(extraData).map(([module, permissions]) => (
-                                                <div key={module} className="mb-4 border-b pb-5">
-                                                    <h4 className="text-sm font-bold text-gray-700 capitalize">{module}</h4>
-                                                    <div className="ms-4 mt-2 grid grid-cols-3 gap-2">
-                                                        {permissions.map((permission) => (
-                                                            <label key={permission.id} className="flex items-center gap-2 text-sm">
-                                                                <input
-                                                                    type="checkbox"
-                                                                    name={field.name}
-                                                                    className="accent-primary"
-                                                                    disabled={processing || mode === 'view'}
-                                                                    value={permission.name}
-                                                                    checked={data.permissions.includes(permission.name)}
-                                                                    onChange={(e) => {
-                                                                        const value = permission.name;
-                                                                        const current = data.permissions || [];
+                                            </SelectContent>
+                                        </Select>
+                                    ) : field.type === 'grouped-checkboxes' ? (
+                                        console.log('permissions in form:', data.permissions),
+                                        <div className="space-y-2">
+                                            {extraData &&
+                                                Object.entries(extraData).map(([module, permissions]) => (
+                                                    <div key={module} className="mb-4 border-b pb-5">
+                                                        <h4 className="text-sm font-bold text-gray-700 capitalize">{module}</h4>
+                                                        <div className="ms-4 mt-2 grid grid-cols-3 gap-2">
+                                                            {permissions.map((permission) => (
+                                                                <label key={permission.id} className="flex items-center gap-2 text-sm">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        name={field.name}
+                                                                        className="accent-primary"
+                                                                        disabled={processing || mode === 'view'}
+                                                                        value={permission.name}
+                                                                        checked={data.permissions.includes(permission.name)}
+                                                                        onChange={(e) => {
+                                                                            const value = permission.name;
+                                                                            const current = data.permissions || [];
 
-                                                                        if (e.target.checked) {
-                                                                            setData('permissions', [...current, value]);
-                                                                        } else {
-                                                                            setData(
-                                                                                'permissions',
-                                                                                current.filter((permission: string) => permission !== value),
-                                                                            );
-                                                                        }
-                                                                    }}
-                                                                />
-                                                                <span>{permission.label}</span>
-                                                            </label>
-                                                        ))}
+                                                                            if (e.target.checked) {
+                                                                                setData('permissions', [...current, value]);
+                                                                            } else {
+                                                                                setData(
+                                                                                    'permissions',
+                                                                                    current.filter((permission: string) => permission !== value),
+                                                                                );
+                                                                            }
+                                                                        }}
+                                                                    />
+                                                                    <span>{permission.label}</span>
+                                                                </label>
+                                                            ))}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            ))}
-                                    </div>
-                                ) : (
-                                    <Input
-                                        id={field.id}
-                                        name={field.name}
-                                        type={field.type}
-                                        placeholder={field.placeholder}
-                                        autoComplete={field.autocomplete}
-                                        tabIndex={field.tabIndex}
-                                        autoFocus={field.autoFocus}
-                                        onChange={(e) => setData(field.name, e.target.value)}
-                                        value={data[field.name] || ''}
-                                        disabled={processing || mode === 'view'}
-                                    />
-                                )}
+                                                ))}
+                                        </div>
+                                    ) : (
+                                        <Input
+                                            id={field.id}
+                                            name={field.name}
+                                            type={field.type}
+                                            placeholder={field.placeholder}
+                                            autoComplete={field.autocomplete}
+                                            tabIndex={field.tabIndex}
+                                            autoFocus={field.autoFocus}
+                                            onChange={(e) => setData(field.name, e.target.value)}
+                                            value={data[field.name] || ''}
+                                            disabled={processing || mode === 'view'}
+                                        />
+                                    )}
 
-                                {/* Form validation error message */}
-                                <InputError message={errors?.[field.name]} />
-                            </div>
-                        ))}
+                                    {/* Form validation error message */}
+                                    <InputError message={errors?.[field.name]} />
+                                </div>
+                            );
+                        })}
                     </div>
                     <DialogFooter>
                         {buttons.map((button) => {
