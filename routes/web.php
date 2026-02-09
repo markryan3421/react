@@ -20,11 +20,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 
-    Route::resource('products', ProductController::class);
-    Route::resource('categories', CategoryController::class);
-    Route::resource('permissions', PermissionController::class);
-    Route::resource('roles', RoleController::class);
-    Route::resource('users', UserController::class);
+    Route::resource('products', ProductController::class)->middleware('permission:access-products-module');
+    Route::resource('categories', CategoryController::class)->middleware('permission:access-categories-module');
+    Route::resource('permissions', PermissionController::class)->middleware('permission:access-permissions-module');
+    Route::resource('roles', RoleController::class)->middleware('permission:access-roles-module');
+    Route::resource('users', UserController::class)->middleware('permission:access-users-module');
 });
 
 require __DIR__.'/settings.php';
