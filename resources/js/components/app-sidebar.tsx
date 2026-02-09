@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid, ShoppingBag, FileText, Lock, Shield, Users } from 'lucide-react';
 import AppLogo from './app-logo';
 import { useLayout } from '@/contexts/LayoutContext';
@@ -27,26 +27,31 @@ const mainNavItems: NavItem[] = [
         title: 'Permissions',
         href: '/permissions',
         icon: Lock,
+        permission: 'access-permissions-module',
     },
     {
         title: 'Roles',
         href: '/roles',
         icon: Shield,
+        permission: 'access-roles-module',
     },
     {
         title: 'Users',
         href: '/users',
         icon: Users,
+        permission: 'access-users-module',
     },
     {
         title: 'Manage Products',
         href: '/products',
         icon: ShoppingBag,
+        permission: 'access-products-module',
     },
     {
         title: 'Manage Categories',
         href: '/categories',
         icon: FileText,
+        permission: 'access-categories-module',
     },
 ];
 
@@ -65,7 +70,18 @@ const footerNavItems: NavItem[] = [
 
 export function AppSidebar() {
 
+    // TODO: Refactor to use a custom hook for auth and permissions
+    const { auth } = usePage().props as any;
+    const roles = auth.roles;
+    const permissions = auth.permissions;
+
     const { position } = useLayout();
+
+    // TODO: Refactor to use a custom hook for auth and permissions
+    // This is a simple example of how to filter nav items based on permissions.
+    const filterNavItems = mainNavItems.filter((item) => !item.permission || permissions.includes(item.permission));
+
+    console.log('FilterNavItems', filterNavItems);
 
     return (
         <Sidebar side={position} collapsible="icon" variant="inset">
@@ -82,7 +98,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={filterNavItems} />
             </SidebarContent>
 
             <SidebarFooter>

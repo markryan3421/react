@@ -27,6 +27,7 @@ export const PermissionModalFormConfig = {
                 { label: 'Products', value: 'products', key: 'products' },
                 { label: 'Roles', value: 'roles', key: 'roles' },
                 { label: 'Users', value: 'users', key: 'users' },
+                { label: 'Permissions', value: 'permissions', key: 'permissions' },
             ],
         },
         {
