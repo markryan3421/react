@@ -11,6 +11,7 @@ export const UsersModalFormConfig = {
         icon: CirclePlus,
         type: 'button',
         variant: 'default',
+        permission: 'create-user',
     },
     fields: [
         {

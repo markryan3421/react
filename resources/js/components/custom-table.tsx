@@ -1,9 +1,10 @@
-import { Link } from "@inertiajs/react";
+import { Link, usePage } from "@inertiajs/react";
 // import { Eye, Pencil, Trash } from "lucide-react";
 import { useRoute } from "ziggy-js";
 import * as LucidIcons from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
+import { hasPermission } from "@/utils/authorization";
 
 interface TableColumn {
     label: string;
@@ -19,6 +20,7 @@ interface ActionConfig {
     icon: keyof typeof LucidIcons;
     route: string;
     className?: string;
+    permission?: string;
 }
 
 interface TableRow {
@@ -43,10 +45,17 @@ export const CustomTable = ({ columns, actions, data, from, onDelete, onView, on
     // console.log(columns);
     // console.log('Data:', data);
 
+    const { auth } = usePage().props as any;
+    const roles = auth.roles;
+    const permissions = auth.permissions;
+
     const renderActionButtons = (row: TableRow) => {
         return (
             <div className="flex justify-center">
                 {actions.map((action, index) => {
+                    if (action.permission && !hasPermission(permissions, action.permission)) {
+                        return null;
+                    }
                     const IconComponent = LucidIcons[action.icon] as React.ElementType;
 
                     if (isModal) {

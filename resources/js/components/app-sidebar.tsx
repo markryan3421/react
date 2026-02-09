@@ -81,7 +81,7 @@ export function AppSidebar() {
     // This is a simple example of how to filter nav items based on permissions.
     const filterNavItems = mainNavItems.filter((item) => !item.permission || permissions.includes(item.permission));
 
-    console.log('FilterNavItems', filterNavItems);
+    // console.log('FilterNavItems', filterNavItems);
 
     return (
         <Sidebar side={position} collapsible="icon" variant="inset">

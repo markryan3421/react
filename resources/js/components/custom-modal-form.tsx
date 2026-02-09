@@ -17,6 +17,8 @@ import { CustomTextarea } from "./ui/custom-textarea"
 import InputError from './input-error';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { LoaderCircle } from "lucide-react"
+import { hasPermission } from "@/utils/authorization"
+import { usePage } from "@inertiajs/react"
 
 interface AddButtonProps {
     id: string,
@@ -25,6 +27,7 @@ interface AddButtonProps {
     icon: string,
     type: 'button' | 'submit' | 'reset' | undefined,
     variant: 'default' | 'outline' | 'ghost' | 'link' | 'destructive' | undefined,
+    permission?: string,
 }
 
 interface FieldProps {
@@ -86,16 +89,42 @@ interface CustomModalFormProps {
     extraData?: ExtraData;
 }
 
-export const CustomModalForm = ({ addButton, title, description, fields, buttons, data, setData, errors, processing, handleSubmit, open, onOpenChange, mode = 'create', previewImage, extraData }: CustomModalFormProps) => {
-    console.log("Extradata:", extraData);
+export const CustomModalForm = ({
+    addButton,
+    title,
+    description,
+    fields,
+    buttons,
+    data,
+    setData,
+    errors,
+    processing,
+    handleSubmit,
+    open,
+    onOpenChange,
+    mode = 'create',
+    previewImage,
+    extraData
+}: CustomModalFormProps) => {
+    // console.log("Extradata:", extraData);
     // console.log("Data permissions:", data.permissions);
+    const { auth } = usePage().props as any;
+    const roles = auth.roles;
+    const permissions = auth.permissions;
+
+    // console.log(addButton.permission); // create-user
+    // console.log(hasPermission(permissions, addButton.permission)); // create-user
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange} modal>
-            <DialogTrigger asChild>
-                <Button type={addButton.type} id={addButton.id} variant={addButton.variant} className={addButton.className}>
-                    {addButton.icon && <addButton.icon />} {addButton.label}
-                </Button>
-            </DialogTrigger>
+            {addButton.permission && hasPermission(permissions, addButton.permission) && (
+                <DialogTrigger asChild>
+                    <Button type={addButton.type} id={addButton.id} variant={addButton.variant} className={addButton.className}>
+                        {addButton.icon && <addButton.icon />} {addButton.label}
+                    </Button>
+                </DialogTrigger>
+            )}
+
             <DialogContent className="sm:max-w-[630px]">
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>

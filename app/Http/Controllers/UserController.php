@@ -18,8 +18,47 @@ class UserController extends Controller
     public function index()
     {
         // dd(Auth::user()->roles);
-        $users = User::with('roles')->latest()->paginate(5);
-        $roles = Role::get();
+
+        $authUser = Auth::user();
+        $authUserRole = $authUser->roles?->first()?->name;
+
+        $userQuery = User::with('roles')->latest();
+
+        if(!in_array($authUserRole, ['super-admin', 'admin', 'editor', 'user'])) {
+            abort(403, 'Unauthorized Access.');
+        }
+
+        // Admin
+        if($authUserRole === 'admin') {
+            $userQuery->whereDoesntHave('roles', function($q) {
+                $q->where('name', 'super-admin');
+            });
+        } elseif ($authUserRole == 'editor') {
+            $userQuery->whereHas('roles', function($q) {
+                $q->whereIn('name', ['editor', 'user']);
+            });
+        } elseif ($authUserRole === 'user') {
+            $userQuery->whereHas('roles', function($q) {
+                $q->where('name', ['user']);
+            }); 
+        }
+
+        $users = $userQuery->paginate(5);
+
+        // List of roles in the role dropdown, will filter based on the roles itself
+        $rolesQuery = Role::query();
+
+        if($authUserRole === 'super-admin') {
+            $rolesQuery->whereIn('name', ['super-admin', 'admin', 'editor', 'user']);
+        } elseif ($authUserRole === 'admin') {
+            $rolesQuery->whereIn('name', ['admin', 'editor', 'user']);
+        } elseif ($authUserRole === 'editor') {
+            $rolesQuery->whereIn('name', ['editor', 'user']);
+        } else {
+            $rolesQuery->whereIn('name', ['user']);
+        }
+
+        $roles = $rolesQuery->get();
 
         return Inertia::render('users/index', compact('users', 'roles'));
     }

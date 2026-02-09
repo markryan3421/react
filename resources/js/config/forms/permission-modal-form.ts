@@ -11,6 +11,7 @@ export const PermissionModalFormConfig = {
         icon: CirclePlus,
         type: 'button',
         variant: 'default',
+        permission: 'create-permission',
     },
     fields: [
         {
