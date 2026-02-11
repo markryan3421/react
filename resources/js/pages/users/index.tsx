@@ -10,6 +10,8 @@ import React from 'react';
 import { CustomToast, toast } from '@/components/custom-toast';
 import { UsersModalFormConfig } from '@/config/forms/users-modal-form';
 import { UsersTableConfig } from '@/config/tables/users-table';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -48,7 +50,6 @@ interface UserPagination {
 // Define the FilterProps interface for search filters
 interface FilterProps {
     search: string;
-    perPage: string;
 }
 
 interface FlashProps extends Record<string, any> {
@@ -67,7 +68,7 @@ interface IndexProps {
     filteredCount: number;
 }
 
-export default function Index({ users }: IndexProps) {
+export default function Index({ users, filters }: IndexProps) {
     // Get the route function from ziggy-js to generate URLs
     const route = useRoute();
 
@@ -83,10 +84,11 @@ export default function Index({ users }: IndexProps) {
     const { data, setData, errors, processing, reset, post, put } = useForm<{
         name: string;
         email: string;
-        password: string[];
+        password: string;
         confirm_password: string;
         roles: string;
         _method: string;
+        search: string;
     }>({
         name: '',
         email: '',
@@ -94,7 +96,33 @@ export default function Index({ users }: IndexProps) {
         confirm_password: '',
         roles: '',
         _method: 'POST',
+        search: filters.search || '',
     });
+
+    // Handle search input change
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setData('search', value);
+
+        // Update the URL with the search query parameter
+        const queryString = value ? { search: value } : {};
+
+        // Pass the search query to the backend to filter users
+        router.get(route('users.index'), queryString, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    };
+
+    // Clears the search bar and resets the product list
+    const handleReset = () => {
+        setData('search', '');
+
+        router.get(route('users.index'), {}, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    }
 
     const handleDelete = (route: string) => {
         if (confirm('Are you sure you want to delete this product?')) {
@@ -199,6 +227,23 @@ export default function Index({ users }: IndexProps) {
             <Head title="Category Management" />
             <CustomToast />
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+
+                <div className="flex items-center justify-items-start gap-4 w-full">
+                    {/* Search Bar */}
+                    <Input
+                        type="text"
+                        value={data.search}
+                        onChange={handleChange}
+                        placeholder='Search role name...'
+                        name="search"
+                        className='max-w-sm h-10 w-1/3'
+                    />
+
+                    <Button onClick={handleReset} className="bg-primary ml-2 h-10 px-5 cursor-pointer">
+                        clear
+                    </Button>
+                </div>
+
                 {/* Custom Modal Form */}
                 <div className="ml-auto">
                     <CustomModalForm

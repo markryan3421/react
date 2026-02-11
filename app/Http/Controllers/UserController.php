@@ -15,14 +15,14 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         // dd(Auth::user()->roles);
 
         $authUser = Auth::user();
         $authUserRole = $authUser->roles?->first()?->name;
 
-        $userQuery = User::with('roles')->latest();
+        $userQuery = User::query()->with('roles')->latest();
 
         if(!in_array($authUserRole, ['super-admin', 'admin', 'editor', 'user'])) {
             abort(403, 'Unauthorized Access.');
@@ -43,7 +43,15 @@ class UserController extends Controller
             }); 
         }
 
-        $users = $userQuery->paginate(5);
+        if($request->filled('search')) {
+            $search = $request->search;
+
+            $userQuery->where(fn($query) =>
+                $query->where('name', 'like', "%{$search}%")
+            );
+        }
+
+        $users = $userQuery->latest()->paginate(5)->withQueryString();
 
         // List of roles in the role dropdown, will filter based on the roles itself
         $rolesQuery = Role::query();
@@ -60,7 +68,8 @@ class UserController extends Controller
 
         $roles = $rolesQuery->get();
 
-        return Inertia::render('users/index', compact('users', 'roles'));
+        $filters = $request->only(['search']);
+        return Inertia::render('users/index', compact('users', 'roles', 'filters'));
     }
 
     /**

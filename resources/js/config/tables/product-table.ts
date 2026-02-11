@@ -8,8 +8,8 @@ export const ProductTableConfig = {
         { label: 'Action', key: 'actions', isAction: true, className: 'border p-4' },
     ],
     actions: [
-        { label: 'View', icon: 'Eye', route: 'products.show', className: 'mx-1 text-gray-600 hover:text-gray-900 cursor-pointer' },
-        { label: 'Edit', icon: 'Pencil', route: 'products.edit', className: 'mx-1 text-gray-600 hover:text-gray-900 cursor-pointer' },
-        { label: 'Delete', icon: 'Trash', route: 'products.destroy', className: 'bg-transparent hover:bg-transparent text-gray-600 hover:text-gray-900 cursor-pointer' },
+        { label: 'View', icon: 'Eye', route: 'products.show', className: 'mx-1 text-gray-600 hover:text-gray-900 cursor-pointer', permission: 'view-product' },
+        { label: 'Edit', icon: 'Pencil', route: 'products.edit', className: 'mx-1 text-gray-600 hover:text-gray-900 cursor-pointer', permission: 'edit-product' },
+        { label: 'Delete', icon: 'Trash', route: 'products.destroy', className: 'bg-transparent hover:bg-transparent text-gray-600 hover:text-gray-900 cursor-pointer', permission: 'delete-product' },
     ],
 }

@@ -16,15 +16,16 @@ interface PaginationData {
 }
 
 interface PaginationProps {
-    products: PaginationData;
+    pagination: PaginationData;
     perPage: string;
     onPerPageChange: (value: string) => void;
     totalCount: number;
     filteredCount: number;
     search: string;
+    resourceName?: string; // e.g. "product", "permission", etc. Used for display purposes.
 }
 
-export const Pagination = ({ products, perPage, onPerPageChange, totalCount, filteredCount, search }: PaginationProps) => {
+export const Pagination = ({ pagination, perPage, onPerPageChange, totalCount, filteredCount, search, resourceName = "item" }: PaginationProps) => {
     // console.log('Per page:', perPage);
     // console.log(totalCount, filteredCount, search);
     return (
@@ -32,9 +33,9 @@ export const Pagination = ({ products, perPage, onPerPageChange, totalCount, fil
 
             {/* Pagination Information */}
             {search ? (
-                <p>Showing <strong>{filteredCount}</strong> item{filteredCount !== 1 && 's'} out of <strong>{totalCount}</strong> product{totalCount !== 1 && 's'}</p>
+                <p>Showing <strong>{filteredCount}</strong> {resourceName}{filteredCount !== 1 && 's'} out of <strong>{totalCount}</strong> {resourceName}{totalCount !== 1 && 's'}</p>
             ) : (
-                <p>Showing <strong>{products.from}</strong> to <strong>{products.to}</strong> of <strong>{products.total}</strong> product{totalCount !== 1 && 's'}</p>
+                <p>Showing <strong>{pagination.from}</strong> to <strong>{pagination.to}</strong> of <strong>{pagination.total}</strong> {resourceName}{totalCount !== 1 && 's'}</p>
             )}
 
             <div className='flex items-center gap-2'>
@@ -57,7 +58,7 @@ export const Pagination = ({ products, perPage, onPerPageChange, totalCount, fil
             </div>
 
             <div className='flex gap-2'>
-                {products.links.map((link, index) => (
+                {pagination.links.map((link, index) => (
                     <Link
                         className={`px-2 py-1 border rounded ${link.active ? 'bg-primary text-white' : ''}`}
                         href={link.url || '#'}

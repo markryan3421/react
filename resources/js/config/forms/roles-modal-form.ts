@@ -11,10 +11,11 @@ export const RolesModalFormConfig = {
         icon: CirclePlus,
         type: 'button',
         variant: 'default',
+        permission: 'create-role',
     },
     fields: [
         {
-            id: 'role-label',
+            id: 'label',
             key: 'label',
             name: 'label',
             label: 'Role Label (e.g. Super Admin)',

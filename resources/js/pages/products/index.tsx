@@ -200,7 +200,15 @@ export default function Index({ products, filters, totalCount, filteredCount }: 
                     onDelete={handleDelete}
                 />
 
-                <Pagination products={products} perPage={data.perPage} onPerPageChange={handlePerPageChange} totalCount={totalCount} filteredCount={filteredCount} search={data.search} />
+                <Pagination
+                    pagination={products}
+                    perPage={data.perPage}
+                    onPerPageChange={handlePerPageChange}
+                    totalCount={totalCount}
+                    filteredCount={filteredCount}
+                    search={data.search}
+                    resourceName='product'
+                />
             </div>
         </AppLayout>
     );

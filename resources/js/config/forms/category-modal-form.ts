@@ -11,6 +11,7 @@ export const CategoryModalFormConfig = {
         icon: CirclePlus,
         type: 'button',
         variant: 'default',
+        permission: 'create-category',
     },
     fields: [
         {

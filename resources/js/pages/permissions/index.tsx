@@ -10,6 +10,9 @@ import React from 'react';
 import { CustomToast, toast } from '@/components/custom-toast';
 import { PermissionsTableConfig } from '@/config/tables/permissions-table';
 import { PermissionModalFormConfig } from '@/config/forms/permission-modal-form';
+import { Pagination } from '@/components/ui/pagination';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -18,7 +21,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-// Define the Product interface, representing the structure of a product object
+// Define the Product interface, representing the structure of a permission object
 // This helps with type-checking and autocompletion in TypeScript
 interface Permission {
     id: number;
@@ -38,9 +41,9 @@ interface LinkProps {
     url: string | null;
 }
 
-// Define the CategoryPagination interface for paginated product data
+// Define the CategoryPagination interface for paginated permission data
 interface PermissionPagination {
-    // This are the list of arrays inside the 'products' object
+    // This are the list of arrays inside the 'permissions' object
     data: Permission[]; // Array of Product objects
     links: LinkProps[]; // Array of pagination link objects
     from: number;
@@ -62,7 +65,7 @@ interface FlashProps extends Record<string, any> {
 }
 
 // Define the props for the Index component
-// Get the 'products' and 'filters' in the form of object array - compacted from the controller
+// Get the 'permissions' and 'filters' in the form of object array - compacted from the controller
 interface IndexProps {
     permissions: PermissionPagination;
     filters: FilterProps;
@@ -70,7 +73,7 @@ interface IndexProps {
     filteredCount: number;
 }
 
-export default function Index({ permissions }: IndexProps) {
+export default function Index({ permissions, filters, totalCount, filteredCount }: IndexProps) {
     // Get the route function from ziggy-js to generate URLs
     const route = useRoute();
 
@@ -86,10 +89,57 @@ export default function Index({ permissions }: IndexProps) {
         label: '',
         description: '',
         _method: 'POST',
+        search: filters.search || '',
+        perPage: filters.perPage || '5',
     });
 
+    // Handle search input change
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setData('search', value);
+
+        // Update the URL with the search query value
+        const queryString = {
+            ...(value && { search: value }),
+            ...(data.perPage && { perPage: data.perPage }),
+        };
+
+        // Pass the search query to the backend to filter permissions
+        router.get(route('permissions.index'), queryString, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    };
+
+    // Clears the search bar and resets the permission list
+    const handleReset = () => {
+        setData('search', '');
+        setData('perPage', '5');
+
+        router.get(route('permissions.index'), {}, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    }
+
+    // Handle number of permissions to display per page
+    const handlePerPageChange = (value: string) => {
+        setData('perPage', value);
+
+        // Update the URL with the per page value
+        const queryString = {
+            ...(data.search && { search: data.search }),
+            ...(value && { perPage: value }),
+        };
+
+        router.get(route('permissions.index'), queryString, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    }
+
     const handleDelete = (route: string) => {
-        if (confirm('Are you sure you want to delete this product?')) {
+        if (confirm('Are you sure you want to delete this permission?')) {
             router.delete(route, {
                 preserveScroll: true,
                 onSuccess: (response: { props: FlashProps }) => {
@@ -189,6 +239,22 @@ export default function Index({ permissions }: IndexProps) {
             <Head title="Category Management" />
             <CustomToast />
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+
+                <div className="flex items-center justify-items-start gap-4 w-full">
+                    {/* Search Bar */}
+                    <Input
+                        type="text"
+                        value={data.search}
+                        onChange={handleChange}
+                        placeholder='Search permission...'
+                        name="search"
+                        className='max-w-sm h-10 w-1/3'
+                    />
+
+                    <Button onClick={handleReset} className="bg-primary ml-2 h-10 px-5 cursor-pointer">
+                        clear
+                    </Button>
+                </div>
                 {/* Custom Modal Form */}
                 <div className="ml-auto">
                     <CustomModalForm
@@ -218,7 +284,17 @@ export default function Index({ permissions }: IndexProps) {
                     onEdit={(category) => openModal('edit', category)}
                     isModal={true}
                 />
+
+                <Pagination
+                    pagination={permissions}
+                    perPage={data.perPage}
+                    onPerPageChange={handlePerPageChange}
+                    totalCount={totalCount}
+                    filteredCount={filteredCount}
+                    search={data.search}
+                    resourceName='permission'
+                />
             </div>
-        </AppLayout>
+        </AppLayout >
     );
 }

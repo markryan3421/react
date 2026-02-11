@@ -108,6 +108,8 @@ export const CustomModalForm = ({
 }: CustomModalFormProps) => {
     // console.log("Extradata:", extraData);
     // console.log("Data permissions:", data.permissions);
+
+    // Get user roles and permissions from Inertia page props
     const { auth } = usePage().props as any;
     const roles = auth.roles;
     const permissions = auth.permissions;
@@ -133,9 +135,8 @@ export const CustomModalForm = ({
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid gap-6">
+                    <div className="grid gap-6 no-scrollbar -mx-4 max-h-[50vh] overflow-y-auto px-4">
                         {fields.map((field) => {
-
                             const isHiddenPassword = field.type === 'password' && mode !== 'create';
 
                             if (isHiddenPassword) {
@@ -176,20 +177,50 @@ export const CustomModalForm = ({
                                             )}
                                         </div>
                                     ) : field.type === 'single-select' ? (
-                                        <Select disabled={processing || mode === 'view'} value={data[field.name] || ''} onValueChange={(value) => setData(field.name, value)}>
+                                        <Select
+                                            disabled={processing || mode === 'view'}
+                                            value={
+                                                // Handle array values for roles field
+                                                field.name === 'roles' && Array.isArray(data[field.name])
+                                                    ? data[field.name][0] || ''
+                                                    : data[field.name] || ''
+                                            }
+                                            onValueChange={(value) => {
+                                                // For roles field, store as array with single element
+                                                if (field.name === 'roles') {
+                                                    setData(field.name, [value]);
+                                                } else {
+                                                    setData(field.name, value);
+                                                }
+                                            }}
+                                        >
                                             <SelectTrigger>
-                                                <SelectValue placeholder={`Select ${field.label}`}></SelectValue>
+                                                <SelectValue placeholder={`Select ${field.label}`}>
+                                                    {/* Special handling for roles */}
+                                                    {field.name === 'roles' && Array.isArray(data[field.name])
+                                                        ? data[field.name][0]
+                                                        : data[field.name]}
+                                                </SelectValue>
                                             </SelectTrigger>
-
                                             <SelectContent>
-                                                {(field.options?.length
-                                                    ? field.options
-                                                    : (extraData?.[field.key] || []).map((item: any) => ({
-                                                        key: item.id,
-                                                        value: item.name,
-                                                        label: item.label,
-                                                    }))
-                                                )?.map((option: FieldOptions) => (
+                                                {(() => {
+                                                    // Case 1: Options explicitly provided in field config
+                                                    if (field.options && field.options.length > 0) {
+                                                        return field.options;
+                                                    }
+
+                                                    // Case 2: Options from extraData
+                                                    if (extraData?.[field.key]) {
+                                                        return extraData[field.key].map((item: any) => ({
+                                                            key: item.id?.toString() || Math.random().toString(),
+                                                            value: item.name || item.value,
+                                                            label: item.label || item.name || item.value,
+                                                        }));
+                                                    }
+
+                                                    // Case 3: No options available
+                                                    return [];
+                                                })().map((option: FieldOptions) => (
                                                     <SelectItem key={option.key} value={option.value}>
                                                         {option.label}
                                                     </SelectItem>

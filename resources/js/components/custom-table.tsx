@@ -128,9 +128,9 @@ export const CustomTable = ({ columns, actions, data, from, onDelete, onView, on
                                             <span>{new Date(row[col.key]).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
                                         ) : col.type === 'multi-values' && Array.isArray(row[col.key]) ? (
                                             <div className="flex flex-wrap justify-center items-center gap-1">
-                                                {row[col.key].map((permission: any) => (
-                                                    <Badge key={permission.id} variant='outline' className="bg-primary text-white p-2">
-                                                        {permission.label || permission.name}
+                                                {row[col.key].map((item: any, idx: number) => (
+                                                    <Badge key={idx} variant='outline' className="bg-primary text-white p-2">
+                                                        {typeof item === 'object' ? (item.label || item.name) : item}
                                                     </Badge>
                                                 ))}
                                             </div>

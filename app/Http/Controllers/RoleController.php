@@ -14,12 +14,59 @@ class RoleController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $roles = Role::with('permissions')->latest()->paginate(5);
-        // dd($roles);
+        $rolesQuery = Role::query();
+
+        // Get the number of roles
+        $totalCount = $rolesQuery->count();
+
+        // Check if the search query matches any of the data in the database
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $rolesQuery->where(fn ($query) => $query->where('label', 'like', "%{$search}%"));
+        }
+
+        $filteredCount = $rolesQuery->count();
+
+        $perPage = (int) ($request->perPage ?? 5);
+
+        // Fetch all product
+        if ($perPage === -1) {
+            $allRoles = Role::with('permissions')->latest()->get()->map(fn ($role) => [
+                'id' => $role->id,
+                'label' => $role->label,
+                'description' => $role->description,
+                'permissions' => $role->permissions,
+            ]);
+
+            $roles = [
+                'data' => $allRoles,
+                'total' => $filteredCount,
+                'perPage' => $perPage,
+                'from' => 1,
+                'to' => $filteredCount,
+                'links' => [],
+            ];
+        } else {
+            // This will fetch all the filtered roles that matches the (1)search query and (2)per page count
+            $roles = $rolesQuery->with('permissions')->latest()->paginate($perPage)->withQueryString();
+
+            $roles->getCollection()->transform(fn ($role) => [
+                'id' => $role->id,
+                'label' => $role->label,
+                'description' => $role->description,
+                'permissions' => $role->permissions,
+            ]);
+        }
+
+        // Fetch all the products that matches the search query
+        $filters = $request->only(['search', 'perPage']);
+        // $roles = Role::with('permissions')->latest()->paginate(5);
         $permissions = Permission::get()->groupBy('module');
-        return Inertia::render('roles/index', compact('roles', 'permissions'));
+
+        return Inertia::render('roles/index', compact('roles', 'permissions', 'filters', 'totalCount', 'filteredCount'));
     }
 
     /**
@@ -41,12 +88,13 @@ class RoleController extends Controller
             'description' => $request->description,
         ]);
 
-        if($role) {
+        if ($role) {
             // Sync the permissions to the newly created role
             $role->syncPermissions($request->permissions);
 
             return redirect()->route('roles.index')->with('success', 'Role created successfully along with its permissions.');
         }
+
         return redirect()->back()->with('error', 'Unable to create role, please try again.');
     }
 
@@ -71,7 +119,7 @@ class RoleController extends Controller
      */
     public function update(RoleRequest $request, Role $role)
     {
-        if($role) {
+        if ($role) {
             $role->update([
                 'label' => $request->label,
                 'name' => Str::slug($request->label),
@@ -85,6 +133,7 @@ class RoleController extends Controller
 
             return redirect()->route('roles.index')->with('success', 'Role updated successfully along with its permissions.');
         }
+
         return redirect()->back()->with('error', 'Unable to update role, please try again.');
     }
 
@@ -93,11 +142,12 @@ class RoleController extends Controller
      */
     public function destroy(Role $role)
     {
-        if($role) {
+        if ($role) {
             $role->delete();
 
             return redirect()->route('roles.index')->with('success', 'Role deleted successfully along with its permissions.');
         }
+
         return redirect()->back()->with('error', 'Unable to delete role, please try again.');
     }
 }

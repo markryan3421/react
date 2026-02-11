@@ -1,4 +1,4 @@
-import AuthLayoutTemplate from '@/layouts/auth/auth-card-layout';
+import AuthSplitLayout from '@/layouts/auth/auth-split-layout';
 
 export default function AuthLayout({
     children,
@@ -11,8 +11,8 @@ export default function AuthLayout({
     description: string;
 }) {
     return (
-        <AuthLayoutTemplate title={title} description={description} {...props}>
+        <AuthSplitLayout title={title} description={description} {...props}>
             {children}
-        </AuthLayoutTemplate>
+        </AuthSplitLayout>
     );
 }
